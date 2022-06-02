@@ -943,7 +943,7 @@ class T5Trainer(Trainer, metaclass=ABCMeta):
 
 
     @overrides
-    def train_step(self):
+    def train_step(self) -> NoReturn:
         if self.state.is_warmup():
             log.info(f'Training warmup={self.state.epoch}...')
         else:
@@ -1012,7 +1012,7 @@ class T5Trainer(Trainer, metaclass=ABCMeta):
 
     # other misc functions to be shared
     @overrides
-    def _generate_outputs_greedy(self, src_ids, src_mask, skip_special_tokens=True):
+    def _generate_outputs_greedy(self, src_ids, src_mask, skip_special_tokens=True) -> Tuple:
         generated_ids_greedy = self.model.generate(src_ids,
                                                    attention_mask=src_mask
                                                    )  # (batch x seq length)
@@ -1022,7 +1022,7 @@ class T5Trainer(Trainer, metaclass=ABCMeta):
 
     # overrides
     @overrides
-    def _generate_outputs_sampled(self, src_ids, src_mask, batch_size):
+    def _generate_outputs_sampled(self, src_ids, src_mask, batch_size) -> List:
         generated_ids_sampled = self.model.generate(
             # see wandb sweep for details. length_penalty=0.01 might actually be better
             src_ids,
@@ -1050,7 +1050,7 @@ def pre_setup(parsed_args):
         parsed_args.num_val = parsed_args.num_train = parsed_args.multitask_num = 10000
 
 
-def setup_wandb_for_run(local_args, do_symlink=True):
+def setup_wandb_for_run(local_args, do_symlink=False):
     wb_dir = local_args.wandb_dir
     assert os.path.isdir(wb_dir)
     # wandb todo:
