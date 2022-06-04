@@ -1,5 +1,19 @@
 from transformers import T5Tokenizer, T5ForConditionalGeneration
 import torch
+import time
+import json
+
+
+with open('data/cryptonite-official-split/cryptonite-train.jsonl', 'r') as json_file:
+    json_list = list(json_file)
+
+input_sequences = [] 
+output_sequences = []
+for json_str in json_list:
+    result = json.loads(json_str)
+    input_sequences.append(result['clue'])
+    output_sequences.append(result['answer'])
+
 
 tokenizer = T5Tokenizer.from_pretrained("t5-small")
 model = T5ForConditionalGeneration.from_pretrained("t5-small")
@@ -8,16 +22,10 @@ model = T5ForConditionalGeneration.from_pretrained("t5-small")
 max_source_length = 512
 max_target_length = 128
 
-# Suppose we have the following 2 training examples:
-input_sequence_1 = "Welcome to NYC"
-output_sequence_1 = "Bienvenue à NYC"
-
-input_sequence_2 = "HuggingFace is a company"
-output_sequence_2 = "HuggingFace est une entreprise"
 
 # encode the inputs
-task_prefix = "translate English to French: "
-input_sequences = [input_sequence_1, input_sequence_2]
+task_prefix = "solve cryptic crossword:"
+
 
 encoding = tokenizer(
     [task_prefix + sequence for sequence in input_sequences],
@@ -31,7 +39,7 @@ input_ids, attention_mask = encoding.input_ids, encoding.attention_mask
 
 # encode the targets
 target_encoding = tokenizer(
-    [output_sequence_1, output_sequence_2], padding="longest", max_length=max_target_length, truncation=True
+    output_sequences, padding="longest", max_length=max_target_length, truncation=True
 )
 labels = target_encoding.input_ids
 
