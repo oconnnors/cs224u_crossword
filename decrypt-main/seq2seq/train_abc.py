@@ -374,8 +374,8 @@ class Trainer(EnforceOverrides, metaclass=ABCMeta):
     @final
     def setup_model_and_device(self):
         # device will be cuda:0
-        self.device, self.gpu_ids = util.get_available_devices(assert_cuda=True)
-        assert str(self.device) == "cuda:0", f'{self.device} != cuda:0'
+        self.device, self.gpu_ids = util.get_available_devices(assert_cuda=False)
+        #assert str(self.device) == "cuda:0", f'{self.device} != cuda:0'
 
         if len(self.gpu_ids) > 1 or self.config.multi_gpu is not None or k_data_parallel:
             logging.info(f'{len(self.gpu_ids)}, {self.config.multi_gpu}, {k_data_parallel}')
@@ -752,6 +752,15 @@ class T5Trainer(Trainer, metaclass=ABCMeta):
 
     @overrides
     def _setup_model_and_tokenizer(self):
+        """self.config.update({'num_train': 10,
+             'num_val': 10,
+
+             # num times that optim.step() will be called
+             # todo: this is wrong with multiloader
+             # 'total_optim_steps': ((num_train // self.config.batch_size) * self.config.num_epochs),
+             'total_train': (1 * self.config.num_epochs)}, allow_val_change=True)
+        self.config.model_name = "t5-small
+        """
         self.model = T5ForConditionalGeneration.from_pretrained(self.config.model_name)
         if self.config.fast_tokenizer:
             self.tokenizer = T5TokenizerFast.from_pretrained(self.config.model_name)
